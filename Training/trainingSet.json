@@ -1,243 +1,417 @@
 [
-  {
-    "input": "What is Botticelli?",
-    "output": "Botticelli is an open-source .NET Core framework for building your own universal bots integrated with databases, queue brokers, speech engines, and AI engines (such as Gpt-j and ChatGPT)."
-  },
-  {
-    "input": "Where can I get Botticelli?",
-    "output": "You can get Botticelli on GitHub."
-  },
-  {
-    "input": "What are the advantages of Botticelli?",
-    "output": "There are several reasons to choose Botticelli: it is cross-platform, reliable, easy to use, easy to deploy (with Docker support), and easy to integrate with databases, AI solutions (Botticelli.AI), speech synthesizers (Botticelli.Talks), queue brokers for high-load systems (Botticelli.Bus), and scheduling (Botticelli.Scheduler)."
-  },
-  {
-    "input": "What are the two parts of Botticelli?",
-    "output": "Botticelli consists of two parts: Bots and Server."
-  },
-  {
-    "input": "What can be managed on the server side in Botticelli?",
-    "output": "On the server side, we can add new bots, change, and check their state (active/non-active)."
-  },
-  {
-    "input": "What can be implemented on the bot side in Botticelli?",
-    "output": "On the bot side, we can implement any business logic we want."
-  },
-  {
-    "input": "What are the system requirements for Botticelli?",
-    "output": ".Net Core 6 and Visual Studio 2022 or higher, or Rider."
-  },
-  {
-    "input": "How do I clone the Botticelli repository?",
-    "output": "You can clone the git repository using the command: `git clone https://github.com/devgopher/botticelli.git`."
-  },
-  {
-    "input": "Where can I find examples of usage for Botticelli?",
-    "output": "Examples of usage are in the Samples subfolder."
-  },
-  {
-    "input": "How to register a bot account?",
-    "output": "Register a bot account at https://core.telegram.org/bots/tutorial#introduction and save your Bot Token."
-  },
-  {
-    "input": "How to start a sample project in Botticelli?",
-    "output": "Go to a folder and edit appsettings.json, then start a sample bot project at Samples\\TelegramMessagingSample and run run_standalone.sh."
-  },
-  {
-    "input": "What to do after the first run of a bot project?",
-    "output": "You should find a Data\\botId file with a generated botId. Copy the generated botId into your clipboard."
-  },
-  {
-    "input": "How do I access the admin panel in Botticelli?",
-    "output": "In your browser, run https://localhost:7247 and login with the credentials: login admin1@botticellibots.com and password 12345678."
-  },
-  {
-    "input": "How to add a bot in the admin panel?",
-    "output": "Go to the 'Your bots' page, click the 'Add Bot' button, put in your botId, and click 'Save'."
-  },
-  {
-    "input": "How to activate my bot?",
-    "output": "On the 'Your bots' page, click the 'start/stop' button to activate your bot and track its status (alive/dead)."
-  },
-   {
-    "input": "How should I make a simple bot with BotticelliBots?",
-    "output": "To create a simple Telegram bot with BotticelliBots, follow these steps: 1) Ensure you have .NET Core 8.0 or higher and either Visual Studio 2022 or Rider 2024/2025 and higher. 2) Download BotticelliBots as a submodule in your project. 3) Use the Telegram BotFather to register your bot and obtain your bot token. 4) Create a new .NET Core Web API project in Visual Studio. 5) In Program.cs, add the necessary services:\n```csharp\nbuilder.Services.AddTelegramBot(builder.Configuration, new BotOptionsBuilder<TelegramBotSettings>()\n    .Set(s => s.Name = settings?.BotName));\nbuilder.Services.AddHostedService<VeryBasicBotService>();\nbuilder.Services.AddBotCommand<GetUtcCommand, GetUtcCommandProcessor<ReplyKeyboardMarkup>, PassValidator<GetUtcCommand>>();\n```\n6) Implement a command processor to handle the /GetUtc command. 7) Deploy your bot and manage it through the admin panel."
-  },
-  {
-    "input": "How do I implement a command processor for my bot?",
-    "output": "You can implement a command processor by creating a class that inherits from CommandProcessor<GetUtcCommand> and implementing the InnerProcess method:\n```csharp\npublic class GetUtcCommandProcessor<TReplyMarkupBase> : CommandProcessor<GetUtcCommand>\n{\n    protected override async Task InnerProcess(Message message, string args, CancellationToken token)\n    {\n        var utcMessageRequest = new SendMessageRequest(Guid.NewGuid().ToString())\n        {\n            Message = new Message\n            {\n                Body = $\"Current UTC Time is: {DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)}\",\n            }\n        };\n        await _bot.SendMessageAsync(utcMessageRequest, null, token);\n    }\n}\n```"
-  },
-  {
-    "input": "How do I set up a Web API project?",
-    "output": "In Visual Studio, create a new .NET Core Web API project."
-  },
-  {
-    "input": "What does the InnerProcess method do?",
-    "output": "The InnerProcess method creates a SendMessageRequest to send the current UTC time to the user. Here’s how it looks:\n```csharp\nvar utcMessageRequest = new SendMessageRequest(Guid.NewGuid().ToString())\n{\n    Message = new Message\n    {\n        Body = $\"Current UTC Time is: {DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)}\",\n    }\n};\nawait _bot.SendMessageAsync(utcMessageRequest, null, token);\n```"
-  },
-  {
-    "input": "Where can I find example bots?",
-    "output": "Check out the Telegram AI Sample on GitHub for more examples and inspiration."
-  },
-  {
-    "input": "Where can I get more information about BotticelliBots?",
-    "output": "Visit the BotticelliBots website or join the community on Telegram for support and updates."
-  },
-    {
-    "input": "What is BotticelliBundle?",
-    "output": "BotticelliBundle is a Docker image specifically designed to streamline the deployment of a basic Botticelli bot. It simplifies the setup and customization of your bot configuration by leveraging the Botticelli framework."
-  },
-  {
-    "input": "What are the key features of BotticelliBundle?",
-    "output": "Key features include Docker Integration, Sample Configuration for easier setup, and Ease of Testing in isolated environments."
-  },
-  {
-    "input": "How do I deploy my bot using BotticelliBundle?",
-    "output": "To deploy your bot, follow these steps: 1) Clone the BotticelliBundle repository to your local machine. 2) Modify the Dockerfile and appsettings.json. 3) Use the following example Dockerfile setup:\n```dockerfile\n# Use .NET SDK 8 image for building\nFROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build\n\n# Set the working directory\nWORKDIR /app\n\n# Clone the Botticelli repository and switch to the specified branch\nRUN git clone --single-branch --branch release/0.8 https://github.com/devgopher/botticelli.git .\nRUN git clone <your git repo> ./bot\n\n# Change to project directory\nWORKDIR /app/bot\n\n# Restore dependencies\nRUN dotnet restore\n\n# Build the project\nRUN dotnet build -c Release -o out\n\n# Use the ASP.NET Runtime image for running\nFROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine\nWORKDIR /app\nCOPY --from=build /app/bot/out .\n\n# Copy custom configuration file\nCOPY appsettings.json .\n\n# Set the entry point for the application\nENTRYPOINT [\"dotnet\", \"<YourBot>.dll\"]\n```"
-  },
-  {
-    "input": "What should I modify in the Dockerfile?",
-    "output": "Adjust the Dockerfile to include your project dependencies and custom configuration. Ensure that the correct branch of the Botticelli repository is cloned and replace `<your git repo>` and `<YourBot>.dll` with your specific repository and bot name."
-  },
-  {
-    "input": "How does Docker integration help with bot deployment?",
-    "output": "Docker integration simplifies the deployment process by encapsulating all dependencies and configurations within a Docker container, allowing for easy testing and reducing compatibility issues."
-  },
-  {
-    "input": "Where can I find sample configuration for BotticelliBundle?",
-    "output": "The BotticelliBundle repository includes a sample bot configuration to guide users in setting up their personalized bots."
-  },
-  {
-    "input": "What is the benefit of running the bot in a Docker container?",
-    "output": "Running the bot in a Docker container allows for isolated testing, enhancing development efficiency by minimizing compatibility issues."
-  },
-  {
-    "input": "Why should I use Docker?",
-    "output": "Docker provides a consistent environment for applications, making it easier to develop, test, and deploy across different systems without compatibility issues."
-  },
-  {
-    "input": "What are the benefits of using Docker?",
-    "output": "Benefits of using Docker include faster deployment times, isolation of applications, scalability, and easier management of dependencies."
-  },
-  {
-    "input": "In what environment should I run Docker?",
-    "output": "Docker can be run on various operating systems, including Linux, MacOS, and Windows. It's best to run it in a development environment that supports containerization."
-  },
-  {
-    "input": "Where can I find the BotticelliBots repository?",
-    "output": "You can find the BotticelliBots repository on GitHub: [https://github.com/devgopher](https://github.com/devgopher)."
-  },
-  {
-    "input": "Where can I get more information about BotticelliBots?",
-    "output": "For further details, visit the official BotticelliBots website: [http://botticellibots.com/](http://botticellibots.com/)."
-  },
-    {
-    "input": "What files are included in the Botticelli repository?",
-    "output": "The Botticelli repository includes the following key files and directories:\n\n1. **src/**: Contains the source code for the Botticelli framework.\n2. **Samples/**: Provides example implementations of bots to demonstrate usage and features.\n3. **Docker/**: Contains Docker-related files for building and deploying Botticelli-based applications.\n4. **appsettings.json**: Configuration file to set up bot settings and dependencies.\n5. **README.md**: Documentation that provides an overview of the project and instructions for use."
-  },
-  {
-    "input": "What is the purpose of the 'src/' directory in the repository?",
-    "output": "The 'src/' directory contains the source code for the Botticelli framework. This is where the core functionality and base classes for building bots are implemented."
-  },
-  {
-    "input": "What can I find in the 'Samples/' directory?",
-    "output": "The 'Samples/' directory includes example bot implementations that demonstrate how to use the Botticelli framework. These samples help developers understand how to configure and deploy their own bots."
-  },
-  {
-    "input": "What is the 'Docker/' directory used for?",
-    "output": "The 'Docker/' directory contains Docker-related files that facilitate the building and deployment of Botticelli-based applications in a containerized environment."
-  },
-  {
-    "input": "What is the purpose of the 'appsettings.json' file?",
-    "output": "'appsettings.json' is a configuration file used to set up various bot settings, including dependencies, tokens, and other environment-specific values needed for the bot to function."
-  },
-  {
-    "input": "What information does the 'README.md' file provide?",
-    "output": "'README.md' contains important documentation, including an overview of the Botticelli framework, installation instructions, and guidance on how to create and deploy bots using the framework."
-  },
-    {
-    "input": "What is the Air Quality Bot?",
-    "output": "The Air Quality Bot is an example of a Telegram bot developed using BotticelliBots that provides air quality information for your location."
-  },
-  {
-    "input": "What can the Air Quality Bot do?",
-    "output": "It retrieves and displays air quality data, helping users stay informed about their local air conditions. You can find the code on GitHub: [Air Quality Bot](https://github.com/devgopher/air_quality_bot)."
-  },
-  {
-    "input": "What is the Recipes Finder Bot?",
-    "output": "The Recipes Finder Bot is another example of a Telegram bot created with BotticelliBots that helps users find recipes based on specific ingredients or preferences. The source code is available here: [Recipes Finder Bot](https://github.com/devgopher/cookbook_bot)."
-  },
-  {
-    "input": "What functionality does the Recipes Finder Bot offer?",
-    "output": "It allows users to search for recipes and get cooking suggestions, making meal planning easier."
-  },
-  {
-    "input": "What is the WikiBooks Finder Bot?",
-    "output": "The WikiBooks Finder Bot is another example of a Telegram bot built using BotticelliBots, designed to help users locate WikiBooks easily. Check the code on GitHub: [WikiBooks Finder Bot](https://github.com/devgopher/wikibooks_bot)."
-  },
-  {
-    "input": "What does the WikiBooks Finder Bot do?",
-    "output": "It assists users in finding educational resources available on WikiBooks, streamlining access to free learning materials."
-  },
-  {
-    "input": "Are there examples of working bots using BotticelliBots?",
-    "output": "Yes, there are several working examples, including the Air Quality Bot, Recipes Finder Bot, and WikiBooks Finder Bot, all built using the Botticelli framework."
-  },
-     {
-      "input": "What is the Botticelli framework?",
-      "output": "Botticelli is an open-source .NET Core framework designed for building universal chatbots integrated with databases, message brokers, speech engines, and AI models such as GPT-j and ChatGPT."
-    },
-    {
-      "input": "What functionalities do chatbots developed with Botticelli provide?",
-      "output": "Chatbots built with Botticelli can provide instant interaction with users, automate customer service, deliver personalized content, and perform specific tasks across various fields like messengers, commerce, education, and healthcare."
-    },
-    {
-      "input": "What advantages does Botticelli offer to developers?",
-      "output": "Botticelli offers cross-platform support, high reliability, ease of use, simple deployment, convenient database integration, and interaction with advanced AI technologies like ChatGPT and GPT-j."
-    },
-    {
-      "input": "How does Botticelli support different messaging platforms?",
-      "output": "Botticelli is designed to ensure compatibility with a wide range of messengers, including popular options like WhatsApp, Telegram, Facebook Messenger, and localized alternatives like WeChat in China."
-    },
-    {
-      "input": "What is the importance of customizable bot coding in Botticelli?",
-      "output": "Custom bot coding in Botticelli allows for complete customization of the bot's behavior, enabling developers to create more complex and individualized solutions tailored to specific needs."
-    },
-    {
-      "input": "What makes BotticelliBots a user-friendly platform?",
-      "output": "BotticelliBots provides a unified interface for managing bots, simplifying development and maintenance processes across various platforms."
-    },
-    {
-      "input": "What advanced technologies can Botticelli integrate with?",
-      "output": "Botticelli supports integration with advanced AI technologies like GPT-j and ChatGPT, enhancing the bot's intelligence and response diversity."
-    },
-    {
-      "input": "How does Botticelli enhance the user experience?",
-      "output": "Botticelli enhances user experience by expanding interaction possibilities through audio capabilities via speech synthesizers, allowing for more natural communication with bots."
-    },
-    {
-      "input": "What is the role of Botticelli.Bus?",
-      "output": "Botticelli.Bus facilitates interaction with external APIs, including integration with message brokers like RabbitMQ, maximizing the flexibility of bot deployments."
-    },
-    {
-      "input": "What future developments are planned for Botticelli?",
-      "output": "Future developments include increasing the number of supported messaging platforms, with planned integrations for Facebook and WeChat, and further enhancements in AI integration capabilities."
-    },
-    {
-      "input": "How can I stay updated on Botticelli's developments?",
-      "output": "You can follow updates by visiting the BotticelliBots website, joining their Telegram channel, or subscribing to their email updates."
-    },
-    {
-      "input": "What are the key benefits of using BotticelliBots?",
-      "output": "Key benefits include cross-platform support, reliability, ease of use, straightforward deployment, and robust integration options for databases and AI solutions."
-    },
-    {
-      "input": "What kind of bots can be created with Botticelli?",
-      "output": "You can create a wide variety of bots with Botticelli, including chatbots for customer service, information retrieval, and personalized content delivery across different platforms."
-    },
-    {
-      "input": "Where can I learn more about Botticelli?",
-      "output": "You can learn more about Botticelli at the official website: http://botticellibots.com/."
-    }
-  
+	{
+		"input": "What is Botticelli?",
+		"output": "Botticelli is an open-source .NET Core framework for building your own universal bots integrated with databases, queue brokers, speech engines, and AI engines (such as Gpt-j and ChatGPT)."
+	},
+	{
+		"input": "Where can I get Botticelli?",
+		"output": "You can get Botticelli on GitHub."
+	},
+	{
+		"input": "What are the advantages of Botticelli?",
+		"output": "There are several reasons to choose Botticelli: it is cross-platform, reliable, easy to use, easy to deploy (with Docker support), and easy to integrate with databases, AI solutions (Botticelli.AI), speech synthesizers (Botticelli.Talks), queue brokers for high-load systems (Botticelli.Bus), and scheduling (Botticelli.Scheduler)."
+	},
+	{
+		"input": "What are the two parts of Botticelli?",
+		"output": "Botticelli consists of two parts: Bots and Server."
+	},
+	{
+		"input": "What can be managed on the server side in Botticelli?",
+		"output": "On the server side, we can add new bots, change, and check their state (active/non-active)."
+	},
+	{
+		"input": "What can be implemented on the bot side in Botticelli?",
+		"output": "On the bot side, we can implement any business logic we want."
+	},
+	{
+		"input": "What are the system requirements for Botticelli?",
+		"output": ".Net Core 6 and Visual Studio 2022 or higher, or Rider."
+	},
+	{
+		"input": "How do I clone the Botticelli repository?",
+		"output": "You can clone the git repository using the command: `git clone https://github.com/devgopher/botticelli.git`."
+	},
+	{
+		"input": "Where can I find examples of usage for Botticelli?",
+		"output": "Examples of usage are in the Samples subfolder."
+	},
+	{
+		"input": "How to register a bot account?",
+		"output": "Register a bot account at https://core.telegram.org/bots/tutorial#introduction and save your Bot Token."
+	},
+	{
+		"input": "How to start a sample project in Botticelli?",
+		"output": "Go to a folder and edit appsettings.json, then start a sample bot project at Samples\\TelegramMessagingSample and run run_standalone.sh."
+	},
+	{
+		"input": "What to do after the first run of a bot project?",
+		"output": "You should find a Data\\botId file with a generated botId. Copy the generated botId into your clipboard."
+	},
+	{
+		"input": "How do I access the admin panel in Botticelli?",
+		"output": "In your browser, run https://localhost:7247 and login with the credentials: login admin1@botticellibots.com and password 12345678."
+	},
+	{
+		"input": "How to add a bot in the admin panel?",
+		"output": "Go to the 'Your bots' page, click the 'Add Bot' button, put in your botId, and click 'Save'."
+	},
+	{
+		"input": "How to activate my bot?",
+		"output": "On the 'Your bots' page, click the 'start/stop' button to activate your bot and track its status (alive/dead)."
+	},
+	{
+		"input": "How should I make a simple bot with BotticelliBots?",
+		"output": "To create a simple Telegram bot with BotticelliBots, follow these steps: 1) Ensure you have .NET Core 8.0 or higher and either Visual Studio 2022 or Rider 2024/2025 and higher. 2) Download BotticelliBots as a submodule in your project. 3) Use the Telegram BotFather to register your bot and obtain your bot token. 4) Create a new .NET Core Web API project in Visual Studio. 5) In Program.cs, add the necessary services:\n```csharp\nbuilder.Services.AddTelegramBot(builder.Configuration, new BotOptionsBuilder<TelegramBotSettings>()\n    .Set(s => s.Name = settings?.BotName));\nbuilder.Services.AddHostedService<VeryBasicBotService>();\nbuilder.Services.AddBotCommand<GetUtcCommand, GetUtcCommandProcessor<ReplyKeyboardMarkup>, PassValidator<GetUtcCommand>>();\n```\n6) Implement a command processor to handle the /GetUtc command. 7) Deploy your bot and manage it through the admin panel."
+	},
+	{
+		"input": "How do I implement a command processor for my bot?",
+		"output": "You can implement a command processor by creating a class that inherits from CommandProcessor<GetUtcCommand> and implementing the InnerProcess method:\n```csharp\npublic class GetUtcCommandProcessor<TReplyMarkupBase> : CommandProcessor<GetUtcCommand>\n{\n    protected override async Task InnerProcess(Message message, string args, CancellationToken token)\n    {\n        var utcMessageRequest = new SendMessageRequest(Guid.NewGuid().ToString())\n        {\n            Message = new Message\n            {\n                Body = $\"Current UTC Time is: {DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)}\",\n            }\n        };\n        await _bot.SendMessageAsync(utcMessageRequest, null, token);\n    }\n}\n```"
+	},
+	{
+		"input": "How do I set up a Web API project?",
+		"output": "In Visual Studio, create a new .NET Core Web API project."
+	},
+	{
+		"input": "What does the InnerProcess method do?",
+		"output": "The InnerProcess method creates a SendMessageRequest to send the current UTC time to the user. Here’s how it looks:\n```csharp\nvar utcMessageRequest = new SendMessageRequest(Guid.NewGuid().ToString())\n{\n    Message = new Message\n    {\n        Body = $\"Current UTC Time is: {DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)}\",\n    }\n};\nawait _bot.SendMessageAsync(utcMessageRequest, null, token);\n```"
+	},
+	{
+		"input": "Where can I find example bots?",
+		"output": "Check out the Telegram AI Sample on GitHub for more examples and inspiration."
+	},
+	{
+		"input": "Where can I get more information about BotticelliBots?",
+		"output": "Visit the BotticelliBots website or join the community on Telegram for support and updates."
+	},
+	{
+		"input": "What is BotticelliBundle?",
+		"output": "BotticelliBundle is a Docker image specifically designed to streamline the deployment of a basic Botticelli bot. It simplifies the setup and customization of your bot configuration by leveraging the Botticelli framework."
+	},
+	{
+		"input": "What are the key features of BotticelliBundle?",
+		"output": "Key features include Docker Integration, Sample Configuration for easier setup, and Ease of Testing in isolated environments."
+	},
+	{
+		"input": "How do I deploy my bot using BotticelliBundle?",
+		"output": "To deploy your bot, follow these steps: 1) Clone the BotticelliBundle repository to your local machine. 2) Modify the Dockerfile and appsettings.json. 3) Use the following example Dockerfile setup:\n```dockerfile\n# Use .NET SDK 8 image for building\nFROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build\n\n# Set the working directory\nWORKDIR /app\n\n# Clone the Botticelli repository and switch to the specified branch\nRUN git clone --single-branch --branch release/0.8 https://github.com/devgopher/botticelli.git .\nRUN git clone <your git repo> ./bot\n\n# Change to project directory\nWORKDIR /app/bot\n\n# Restore dependencies\nRUN dotnet restore\n\n# Build the project\nRUN dotnet build -c Release -o out\n\n# Use the ASP.NET Runtime image for running\nFROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine\nWORKDIR /app\nCOPY --from=build /app/bot/out .\n\n# Copy custom configuration file\nCOPY appsettings.json .\n\n# Set the entry point for the application\nENTRYPOINT [\"dotnet\", \"<YourBot>.dll\"]\n```"
+	},
+	{
+		"input": "What should I modify in the Dockerfile?",
+		"output": "Adjust the Dockerfile to include your project dependencies and custom configuration. Ensure that the correct branch of the Botticelli repository is cloned and replace `<your git repo>` and `<YourBot>.dll` with your specific repository and bot name."
+	},
+	{
+		"input": "How does Docker integration help with bot deployment?",
+		"output": "Docker integration simplifies the deployment process by encapsulating all dependencies and configurations within a Docker container, allowing for easy testing and reducing compatibility issues."
+	},
+	{
+		"input": "Where can I find sample configuration for BotticelliBundle?",
+		"output": "The BotticelliBundle repository includes a sample bot configuration to guide users in setting up their personalized bots."
+	},
+	{
+		"input": "What is the benefit of running the bot in a Docker container?",
+		"output": "Running the bot in a Docker container allows for isolated testing, enhancing development efficiency by minimizing compatibility issues."
+	},
+	{
+		"input": "Why should I use Docker?",
+		"output": "Docker provides a consistent environment for applications, making it easier to develop, test, and deploy across different systems without compatibility issues."
+	},
+	{
+		"input": "What are the benefits of using Docker?",
+		"output": "Benefits of using Docker include faster deployment times, isolation of applications, scalability, and easier management of dependencies."
+	},
+	{
+		"input": "In what environment should I run Docker?",
+		"output": "Docker can be run on various operating systems, including Linux, MacOS, and Windows. It's best to run it in a development environment that supports containerization."
+	},
+	{
+		"input": "Where can I find the BotticelliBots repository?",
+		"output": "You can find the BotticelliBots repository on GitHub: [https://github.com/devgopher](https://github.com/devgopher)."
+	},
+	{
+		"input": "Where can I get more information about BotticelliBots?",
+		"output": "For further details, visit the official BotticelliBots website: [http://botticellibots.com/](http://botticellibots.com/)."
+	},
+	{
+		"input": "What files are included in the Botticelli repository?",
+		"output": "The Botticelli repository includes the following key files and directories:\n\n1. **src/**: Contains the source code for the Botticelli framework.\n2. **Samples/**: Provides example implementations of bots to demonstrate usage and features.\n3. **Docker/**: Contains Docker-related files for building and deploying Botticelli-based applications.\n4. **appsettings.json**: Configuration file to set up bot settings and dependencies.\n5. **README.md**: Documentation that provides an overview of the project and instructions for use."
+	},
+	{
+		"input": "What is the purpose of the 'src/' directory in the repository?",
+		"output": "The 'src/' directory contains the source code for the Botticelli framework. This is where the core functionality and base classes for building bots are implemented."
+	},
+	{
+		"input": "What can I find in the 'Samples/' directory?",
+		"output": "The 'Samples/' directory includes example bot implementations that demonstrate how to use the Botticelli framework. These samples help developers understand how to configure and deploy their own bots."
+	},
+	{
+		"input": "What is the 'Docker/' directory used for?",
+		"output": "The 'Docker/' directory contains Docker-related files that facilitate the building and deployment of Botticelli-based applications in a containerized environment."
+	},
+	{
+		"input": "What is the purpose of the 'appsettings.json' file?",
+		"output": "'appsettings.json' is a configuration file used to set up various bot settings, including dependencies, tokens, and other environment-specific values needed for the bot to function."
+	},
+	{
+		"input": "What information does the 'README.md' file provide?",
+		"output": "'README.md' contains important documentation, including an overview of the Botticelli framework, installation instructions, and guidance on how to create and deploy bots using the framework."
+	},
+	{
+		"input": "What is the Air Quality Bot?",
+		"output": "The Air Quality Bot is an example of a Telegram bot developed using BotticelliBots that provides air quality information for your location."
+	},
+	{
+		"input": "What can the Air Quality Bot do?",
+		"output": "It retrieves and displays air quality data, helping users stay informed about their local air conditions. You can find the code on GitHub: [Air Quality Bot](https://github.com/devgopher/air_quality_bot)."
+	},
+	{
+		"input": "What is the Recipes Finder Bot?",
+		"output": "The Recipes Finder Bot is another example of a Telegram bot created with BotticelliBots that helps users find recipes based on specific ingredients or preferences. The source code is available here: [Recipes Finder Bot](https://github.com/devgopher/cookbook_bot)."
+	},
+	{
+		"input": "What functionality does the Recipes Finder Bot offer?",
+		"output": "It allows users to search for recipes and get cooking suggestions, making meal planning easier."
+	},
+	{
+		"input": "What is the WikiBooks Finder Bot?",
+		"output": "The WikiBooks Finder Bot is another example of a Telegram bot built using BotticelliBots, designed to help users locate WikiBooks easily. Check the code on GitHub: [WikiBooks Finder Bot](https://github.com/devgopher/wikibooks_bot)."
+	},
+	{
+		"input": "What does the WikiBooks Finder Bot do?",
+		"output": "It assists users in finding educational resources available on WikiBooks, streamlining access to free learning materials."
+	},
+	{
+		"input": "Are there examples of working bots using BotticelliBots?",
+		"output": "Yes, there are several working examples, including the Air Quality Bot, Recipes Finder Bot, and WikiBooks Finder Bot, all built using the Botticelli framework."
+	},
+	{
+		"input": "What is the Botticelli framework?",
+		"output": "Botticelli is an open-source .NET Core framework designed for building universal chatbots integrated with databases, message brokers, speech engines, and AI models such as GPT-j and ChatGPT."
+	},
+	{
+		"input": "What functionalities do chatbots developed with Botticelli provide?",
+		"output": "Chatbots built with Botticelli can provide instant interaction with users, automate customer service, deliver personalized content, and perform specific tasks across various fields like messengers, commerce, education, and healthcare."
+	},
+	{
+		"input": "What advantages does Botticelli offer to developers?",
+		"output": "Botticelli offers cross-platform support, high reliability, ease of use, simple deployment, convenient database integration, and interaction with advanced AI technologies like ChatGPT and GPT-j."
+	},
+	{
+		"input": "How does Botticelli support different messaging platforms?",
+		"output": "Botticelli is designed to ensure compatibility with a wide range of messengers, including popular options like WhatsApp, Telegram, Facebook Messenger, and localized alternatives like WeChat in China."
+	},
+	{
+		"input": "What is the importance of customizable bot coding in Botticelli?",
+		"output": "Custom bot coding in Botticelli allows for complete customization of the bot's behavior, enabling developers to create more complex and individualized solutions tailored to specific needs."
+	},
+	{
+		"input": "What makes BotticelliBots a user-friendly platform?",
+		"output": "BotticelliBots provides a unified interface for managing bots, simplifying development and maintenance processes across various platforms."
+	},
+	{
+		"input": "What advanced technologies can Botticelli integrate with?",
+		"output": "Botticelli supports integration with advanced AI technologies like GPT-j and ChatGPT, enhancing the bot's intelligence and response diversity."
+	},
+	{
+		"input": "How does Botticelli enhance the user experience?",
+		"output": "Botticelli enhances user experience by expanding interaction possibilities through audio capabilities via speech synthesizers, allowing for more natural communication with bots."
+	},
+	{
+		"input": "What is the role of Botticelli.Bus?",
+		"output": "Botticelli.Bus facilitates interaction with external APIs, including integration with message brokers like RabbitMQ, maximizing the flexibility of bot deployments."
+	},
+	{
+		"input": "What future developments are planned for Botticelli?",
+		"output": "Future developments include increasing the number of supported messaging platforms, with planned integrations for Facebook and WeChat, and further enhancements in AI integration capabilities."
+	},
+	{
+		"input": "How can I stay updated on Botticelli's developments?",
+		"output": "You can follow updates by visiting the BotticelliBots website, joining their Telegram channel, or subscribing to their email updates."
+	},
+	{
+		"input": "What are the key benefits of using BotticelliBots?",
+		"output": "Key benefits include cross-platform support, reliability, ease of use, straightforward deployment, and robust integration options for databases and AI solutions."
+	},
+	{
+		"input": "What kind of bots can be created with Botticelli?",
+		"output": "You can create a wide variety of bots with Botticelli, including chatbots for customer service, information retrieval, and personalized content delivery across different platforms."
+	},
+	{
+		"input": "Where can I learn more about Botticelli?",
+		"output": "You can learn more about Botticelli at the official website: http://botticellibots.com/."
+	},
+	{
+		"input": "What does the MathCommand pipeline do in this bot?",
+		"output": "It registers MathCommand and processes its numeric input through a chain: parse input, apply transforms (sqrt, sqrt, cos, abs, sqrt) in sequence, then produce output via ReplyKeyboardMarkup.",
+		"code": "// Example: simulate pipeline\nvar value = 16.0;\nvalue = Math.Sqrt(value); // 4\nvalue = Math.Sqrt(value); // 2\nvalue = Math.Cos(value);\nvalue = Math.Abs(value);\nvalue = Math.Sqrt(value); // final result"
+	},
+	{
+		"input": "How is the Telegram bot initialized in the application?",
+		"output": "The bot is created via builder.Services.AddTelegramBot(builder.Configuration).Prepare(), then the app configures services, builds and runs the web application.",
+		"code": "// Example initialization call\nvar bot = builder.Services.AddTelegramBot(builder.Configuration).Prepare();"
+	},
+	{
+		"input": "Which storage backend is configured for the bot?",
+		"output": "Chained Redis storage is configured using AddChainedRedisStorage<string, string>(builder.Configuration).",
+		"code": "// Example registration\nbuilder.Services.AddChainedRedisStorage<string,string>(builder.Configuration);"
+	},
+	{
+		"input": "Which logging provider is added?",
+		"output": "NLog logging is added via builder.Services.AddLogging(cfg => cfg.AddNLog()).",
+		"code": "builder.Services.AddLogging(cfg => cfg.AddNLog());"
+	},
+	{
+		"input": "How are bot commands registered?",
+		"output": "Bot commands are registered with AddBotCommand().",
+		"code": "builder.Services.AddBotCommand();"
+	},
+	{
+		"input": "What is the role of OutputCommandProcessor in the chain?",
+		"output": "OutputCommandProcessor sends the final command result to the user using ReplyKeyboardMarkup layout.",
+		"code": "// pseudo: send reply\nawait outputProcessor.SendReply(chatId, text, new ReplyKeyboardMarkup(...));"
+	},
+	{
+		"input": "Which processors precede the OutputCommandProcessor?",
+		"output": "Multiple TransformArgumentsProcessor instances and an InputCommandProcessor precede the OutputCommandProcessor.",
+		"code": "cb => cb.Next<InputCommandProcessor>().Next<TransformArgumentsProcessor<MathCommand,double>>()..."
+	},
+	{
+		"input": "How many TransformArgumentsProcessor calls are chained for MathCommand?",
+		"output": "Five TransformArgumentsProcessor instances are chained for MathCommand.",
+		"code": "// Example: count\nvar chain = new[] {\"Input\",\"T1\",\"T2\",\"T3\",\"T4\",\"T5\",\"Output\"}; Console.WriteLine(chain.Length-2);"
+	},
+	{
+		"input": "Which mathematical functions are applied by the transforms, in order?",
+		"output": "sqrt, sqrt, cos, abs, sqrt.",
+		"code": "Func<double,double>[] funcs = { Math.Sqrt, Math.Sqrt, Math.Cos, Math.Abs, Math.Sqrt };"
+	},
+	{
+		"input": "What is the purpose of PassValidator?",
+		"output": "PassValidator is used as a validator in the monad chain; it likely allows the command to pass validation without modification.",
+		"code": "// PassValidator example\npublic class PassValidator: IValidator { public bool Validate(T cmd) => true; }"
+	},
+	{
+		"input": "What reply markup type is used for output?",
+		"output": "ReplyKeyboardMarkup is used as the reply markup type for output.",
+		"code": "var keyboard = new ReplyKeyboardMarkup(new[]{ new[]{ new KeyboardButton(\"OK\") } });"
+	},
+	{
+		"input": "Where is ReplyTelegramLayoutSupplier used?",
+		"output": "ReplyTelegramLayoutSupplier is provided as the layout supplier type in AddMonadsChain for formatting the reply.",
+		"code": "// typical DI registration\nservices.AddSingleton<IReplyLayoutSupplier, ReplyTelegramLayoutSupplier>();"
+	},
+	{
+		"input": "What does Prepare() likely do after AddTelegramBot?",
+		"output": "Prepare() likely finalizes bot setup — registers client, handlers, and configures services needed before running the app.",
+		"code": "// conceptual\nvar botClient = new TelegramBotClient(token); services.AddSingleton(botClient);"
+	},
+	{
+		"input": "What framework hosts the bot application?",
+		"output": "The bot runs inside an ASP.NET Core WebApplication (WebApplication.CreateBuilder / builder.Build / app.RunAsync).",
+		"code": "var builder = WebApplication.CreateBuilder(args); var app = builder.Build(); await app.RunAsync();"
+	},
+	{
+		"input": "How are services added to the DI container?",
+		"output": "Services are added using builder.Services.Add... extension methods before building the application.",
+		"code": "builder.Services.AddSingleton<IMyService, MyService>();"
+	},
+	{
+		"input": "Which namespace provides Redis extensions used here?",
+		"output": "Botticelli.Chained.Context.Redis.Extensions provides the AddChainedRedisStorage extension.",
+		"code": "using Botticelli.Chained.Context.Redis.Extensions; // enables AddChainedRedisStorage"
+	},
+	{
+		"input": "What does AddTelegramLayoutsSupport() enable?",
+		"output": "It enables support for Telegram-specific layout components and layout supply services used by reply formatting.",
+		"code": "builder.Services.AddTelegramLayoutsSupport();"
+	},
+	{
+		"input": "What is the significance of generic parameters in AddChainedRedisStorage<string, string>?",
+		"output": "They specify the key and value types (string,string) used by the chained Redis storage.",
+		"code": "AddChainedRedisStorage<TKey,TValue>(IConfiguration cfg) // TKey=string, TValue=string"
+	},
+	{
+		"input": "How is dependency injection referenced in AddMonadsChain call?",
+		"output": "AddMonadsChain is called with builder.Services and a callback configuring the chain via cb => cb.Next<...>().Next<...>().",
+		"code": "builder.Services.AddMonadsChain<MathCommand,PassValidator,ReplyKeyboardMarkup,ReplyTelegramLayoutSupplier>(builder.Services, cb => cb.Next<...>());"
+	},
+	{
+		"input": "Which command processor starts the chain?",
+		"output": "InputCommandProcessor appears as the first processor in the chain.",
+		"code": "cb.Next<InputCommandProcessor>()"
+	},
+	{
+		"input": "Explain the order of processors applied to MathCommand.",
+		"output": "The chain executes InputCommandProcessor first, then five TransformArgumentsProcessor instances (with funcs: Math.Sqrt, Math.Sqrt, Math.Cos, Math.Abs, Math.Sqrt), and finally OutputCommandProcessor.",
+		"code": "// Order example\n// 1. InputCommandProcessor\n// 2. Transform: Math.Sqrt\n// 3. Transform: Math.Sqrt\n// 4. Transform: Math.Cos\n// 5. Transform: Math.Abs\n// 6. Transform: Math.Sqrt\n// 7. OutputCommandProcessor"
+	},
+	{
+		"input": "Show a short snippet that registers the bot and prepares it.",
+		"output": "Call AddTelegramBot on services with configuration and then Prepare().",
+		"code": "var bot = builder.Services.AddTelegramBot(builder.Configuration).Prepare();"
+	},
+	{
+		"input": "How to register Redis chained storage in DI?",
+		"output": "Use AddChainedRedisStorage with configuration and generic key/value types.",
+		"code": "builder.Services.AddChainedRedisStorage<string,string>(builder.Configuration);"
+	},
+	{
+		"input": "Provide an example of adding logging with NLog.",
+		"output": "Configure logging during service registration using AddLogging and AddNLog.",
+		"code": "builder.Services.AddLogging(cfg => cfg.AddNLog());"
+	},
+	{
+		"input": "Demonstrate registering MathCommand and its monad chain.",
+		"output": "Register the command with AddBotCommand and configure processors via AddMonadsChain fluent API.",
+		"code": "builder.Services.AddBotCommand()\n    .AddMonadsChain<MathCommand,PassValidator,ReplyKeyboardMarkup,ReplyTelegramLayoutSupplier>(builder.Services, cb =>\n        cb.Next<InputCommandProcessor>()\n          .Next<TransformArgumentsProcessor<MathCommand,double>>(tp => tp.SuccessFunc = Math.Sqrt)\n          .Next<OutputCommandProcessor<ReplyKeyboardMarkup,MathCommand>>() );"
+	},
+	{
+		"input": "What delegate signature is used for SuccessFunc in TransformArgumentsProcessor?",
+		"output": "A Func<double,double> delegate that maps a double to a transformed double.",
+		"code": "// Example assignment\ntp => tp.SuccessFunc = new Func<double,double>(x => Math.Cos(x));"
+	},
+	{
+		"input": "Show a code example applying the exact sequence of math transforms to a value.",
+		"output": "Apply Math.Sqrt, Math.Sqrt, Math.Cos, Math.Abs, Math.Sqrt sequentially to the input double.",
+		"code": "double ApplyTransforms(double v){ v = Math.Sqrt(v); v = M th.Sqrt(v); v = Math.Cos(v); v = Math.Abs(v); v = Math.Sqrt(v); return v; }"
+	},
+	{
+		"input": "How to change the reply layout supplier to InlineTelegramLayoutSupplier?",
+		"output": "Replace ReplyTelegramLayoutSupplier generic parameter and register the new supplier in DI.",
+		"code": "builder.Services.AddMonadsChain<MathCommand,PassValidator,InlineKeyboardMarkup,InlineTelegramLayoutSupplier>(builder.Services, cb => { /.../ });"
+	},
+	{
+		"input": "Provide an example of validating numeric input before applying sqrt.",
+		"output": "Check parsing and non-negativity before calling Math.Sqrt to avoid domain errors.",
+		"code": "if(!double.TryParse(inputText, out var v)) return Error(\"Invalid number\"); if(v < 0) return Error(\"Negative input\"); v = Math.Sqrt(v);"
+	},
+	{
+		"input": "How to run the configured WebApplication?",
+		"output": "Build the application from builder and call RunAsync to start it.",
+		"code": "var app = builder.Build(); await app.RunAsync();"
+	},
+	{
+		"input": "What is a monad in functional programming (short)?",
+		"output": "A monad is an abstraction that represents computations as values, providing bind (>>=) and return operations to sequence computations while handling context (e.g., side effects, errors, state).",
+		"code": "// Conceptual pseudo\n// bind: M.Bind(func: T->M) -> M\n// return: value -> M"
+	},
+	{
+		"input": "How does monadic composition help in the processor chain?",
+		"output": "It allows sequencing operations where each processor passes a contextual result to the next, handling effects (validation, failure) uniformly.",
+		"code": "// Pseudo: input.Bind(Parse).Bind(Transform1).Bind(Transform2).Bind(Output) // errors propagate"
+	},
+	{
+		"input": "Give a simple C#-style example of a Result monad used in pipeline.",
+		"output": "Result wraps success or error; Bind applies a function on success and propagates errors.",
+		"code": "public class Result{ public bool IsOk; public T Value; public string Error; public Result Bind(Func<T,Result> f) => IsOk? f(Value) : new Result{ IsOk=false, Error=Error }; }"
+	},
+	{
+		"input": "How can validators be expressed monadically in this chain?",
+		"output": "Validator returns a monadic Result: success continues the chain, failure short-circuits with an error value.",
+		"code": "Result Validate(MathCommand c){ return c.IsValid? Result.Ok(c) : Result.Fail(\"validation failed\"); }"
+	},
+	{
+		"input": "What are practical benefits of using monads for bot command processing?",
+		"output": "They simplify composition of parsing, validation, transformation, and output while centralizing error handling and side-effect management.",
+		"code": "// Benefits: composability, clear error propagation, modular processors composed via Bind/Next"
+	}
 ]
