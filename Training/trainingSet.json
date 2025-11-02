@@ -413,5 +413,447 @@
 		"input": "What are practical benefits of using monads for bot command processing?",
 		"output": "They simplify composition of parsing, validation, transformation, and output while centralizing error handling and side-effect management.",
 		"code": "// Benefits: composability, clear error propagation, modular processors composed via Bind/Next"
+	},
+	{
+		"instruction": "Set up a basic Telegram bot using Botticelli in an ASP.NET Core application.",
+		"input": "Create a minimal web application that initializes a Telegram bot via Botticelli. Include the core service configuration steps.",
+		"output": "using Botticelli.Broadcasting.Telegram.Extensions;\\nusing Botticelli.Framework.Extensions;\\n\\nvar builder = WebApplication.CreateBuilder(args);\\n\\nbuilder.Services\\n    .AddTelegramBot(builder.Configuration)\\n    .AddTelegramBroadcasting(builder.Configuration)\\n    .Prepare();\\n\\nvar app = builder.Build();\\nawait app.RunAsync();"
+	},
+	{
+		"instruction": "Register the /start command with a processor and validator in a Botticelli bot.",
+		"input": "Register the /start command, its processor, and validator in the DI container. Use the types StartCommand, StartCommandProcessor, and PassValidator.",
+		"output": "builder.Services\\n    .AddBotCommand<StartCommand>()\\n    .AddProcessor<StartCommandProcessor<ReplyKeyboardMarkup>>()\\n    .AddValidator<PassValidator<StartCommand>>();"
+	},
+	{
+		"instruction": "Override the application URL to http://localhost:5044.",
+		"input": "The app currently uses the default port. Explicitly set the URL to http://localhost:5044.",
+		"output": "var app = builder.Build();\\napp.Urls.Clear();\\napp.Urls.Add(\"http://localhost:5044\");\\n\\nawait app.RunAsync();"
+	},
+	{
+		"instruction": "Configure console logging for the bot application.",
+		"input": "Add logging setup so that all messages and errors are output to the console.",
+		"output": "var builder = WebApplication.CreateBuilder(args);\\n\\n// Add console logging\\nbuilder.Logging.AddConsole();\\n\\nbuilder.Services\\n    .AddTelegramBot(builder.Configuration)\\n    .AddTelegramBroadcasting(builder.Configuration)\\n    .Prepare();\\n\\nvar app = builder.Build();\\nawait app.RunAsync();"
+	},
+	{
+		"instruction": "Combine all configurations: bot setup, /start command, URL, and logging.",
+		"input": "Provide a complete program.cs file that includes bot configuration, /start command registration, URL override, and console logging.",
+		"output": "using Botticelli.Broadcasting.Telegram.Extensions;\\nusing Botticelli.Framework.Commands.Validators;\\nusing Botticelli.Framework.Extensions;\\nusing Botticelli.Framework.Telegram.Extensions;\\nusing Broadcasting.Sample.Common.Commands;\\nusing Broadcasting.Sample.Common.Commands.Processors;\\nusing Telegram.Bot.Types.ReplyMarkups;\\n\\nvar builder = WebApplication.CreateBuilder(args);\\n\\n// Console logging\\nbuilder.Logging.AddConsole();\\n\\n// Bot service configuration\\nbuilder.Services\\n    .AddTelegramBot(builder.Configuration)\\n    .AddTelegramBroadcasting(builder.Configuration)\\n    .Prepare();\\n\\n// Register /start command\\nbuilder.Services\\n    .AddBotCommand<StartCommand>()\\n    .AddProcessor<StartCommandProcessor<ReplyKeyboardMarkup>>()\\n    .AddValidator<PassValidator<StartCommand>>();\\n\\nvar app = builder.Build();\\n\\n// Override URL\\napp.Urls.Clear();\\napp.Urls.Add(\"http://localhost:5044\");\\n\\nawait app.RunAsync();"
+	},
+	{
+		"instruction": "Add error handling middleware to the bot application.",
+		"input": "Include exception handling middleware to prevent crashes. Route errors to /error.",
+		"output": "var app = builder.Build();\\n\\n// Exception handling middleware\\napp.UseExceptionHandler(\"/error\");\\n\\napp.Urls.Clear();\\napp.Urls.Add(\"http://localhost:5044\");\\n\\nawait app.RunAsync();"
+	},
+	{
+		"instruction": "Configure the bot to use HTTPS in production.",
+		"input": "Update the app configuration to use HTTPS when deployed. Assume a valid certificate is available.",
+		"output": "var app = builder.Build();\\n\\n// Enable HTTPS in production\\napp.UseHttpsRedirection();\\n\\napp.Urls.Clear();\\napp.Urls.Add(\"https://localhost:5045\");\\n\\nawait app.RunAsync();"
+	},
+	{
+		"instruction": "Add health checks to the bot service.",
+		"input": "Integrate health checks so that the bot can report its status (e.g., for Kubernetes or monitoring tools).",
+		"output": "var builder = WebApplication.CreateBuilder(args);\\n\\n// Add health checks\\nbuilder.Services.AddHealthChecks();\\n\\nbuilder.Services\\n    .AddTelegramBot(builder.Configuration)\\n    .AddTelegramBroadcasting(builder.Configuration)\\n    .Prepare();\\n\\nvar app = builder.Build();\\n\\n// Map health check endpoint\\napp.MapHealthChecks(\"/health\");\\n\\nawait app.RunAsync();"
+	},
+	{
+		"instruction": "Pass a custom configuration section to the bot services.",
+		"input": "Instead of using the full builder.Configuration, pass a specific configuration section (e.g., 'Telegram') to AddTelegramBot.",
+		"output": "var builder = WebApplication.CreateBuilder(args);\\n\\n// Use a specific config section\\nbuilder.Services\\n    .AddTelegramBot(builder.Configuration.GetSection(\"Telegram\"))\\n    .AddTelegramBroadcasting(builder.Configuration.GetSection(\"Broadcasting\"))\\n    .Prepare();\\n\\nvar app = builder.Build();\\nawait app.RunAsync();"
+	},
+	{
+		"instruction": "Log incoming messages to the console with a timestamp.",
+		"input": "Modify the app to log every received Telegram message with a timestamp and user ID.",
+		"output": "var app = builder.Build();\\n\\n// Custom middleware to log incoming messages\\napp.Use(async (context, next) =>\\n{\\n    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();\\n    if (context.Request.Path.StartsWithSegments(\"/api/telegram\"))\\n    {\\n        logger.LogInformation(\\n            \"[{Timestamp}] Received message from user {UserId}\",\\n            DateTime.UtcNow,\\n            context.Request.Query[\"user_id\"]);\\n    }\\n    await next();\\n});\\n\\nawait app.RunAsync();"
+	},
+	{
+		"input": "Create a complete C# file for a StartCommandProcessor implementing the provided logic (include using directives and namespace).",
+		"output": "using Botticelli.Framework.Commands.Processors;\nusing Botticelli.Framework.Commands.Validators;\nusing Botticelli.Shared.API.Client.Requests;\nusing Botticelli.Shared.ValueObjects;\nusing FluentValidation;\nusing Microsoft.Extensions.Logging;\nusing System.Threading;\nusing System.Threading.Tasks;\n\nnamespace Broadcasting.Sample.Common.Commands.Processors\n{\n    public class StartCommandProcessor : CommandProcessor where TReplyMarkup : class\n    {\n        public StartCommandProcessor(ILogger<StartCommandProcessor> logger,\n                                     ICommandValidator commandValidator,\n                                     IValidator messageValidator)\n                : base(logger,\n                       commandValidator,\n                       messageValidator)\n        {\n        }\n\n        protected override Task InnerProcessContact(Message message, CancellationToken token)\n        {\n            return Task.CompletedTask;\n        }\n\n        protected override Task InnerProcessPoll(Message message, CancellationToken token)\n        {\n            return Task.CompletedTask;\n        }\n\n        protected override Task InnerProcessLocation(Message message, CancellationToken token)\n        {\n            return Task.CompletedTask;\n        }\n\n        protected override async Task InnerProcess(Message message, CancellationToken token)\n        {\n            var greetingMessageRequest = new SendMessageRequest\n            {\n                Message = new Message\n                {\n                    ChatIds = message.ChatIds,\n                    Body = \"Bot started. Please, wait for broadcast messages from admin...\"\n                }\n            };\n\n            await SendMessage(greetingMessageRequest, token);\n        }\n    }\n}\n"
+	},
+	{
+		"input": "Create a minimal C# file for StartCommand implementing ICommand with a read-only Id property.",
+		"output": "using Botticelli.Framework.Commands;\nusing System;\n\nnamespace Broadcasting.Sample.Common.Commands;\n\npublic class StartCommand : ICommand\n{\n    public Guid Id { get; }\n}\n"
+	},
+	{
+		"input": "Create a JSONL training example: prompt asks to produce the full C# file for GetNameCommandProcessor (include using directives and namespace).",
+		"output": "using Botticelli.Client.Analytics;\\nusing Botticelli.Framework.Commands.Processors;\\nusing Botticelli.Framework.Commands.Validators;\\nusing Botticelli.Shared.ValueObjects;\\nusing FluentValidation;\\nusing Microsoft.Extensions.Logging;\\nusing System.Threading;\\nusing System.Threading.Tasks;\\n\\nnamespace TelegramCommandChainSample.Commands.CommandProcessors;\\n\\npublic class GetNameCommandProcessor : WaitForClientResponseCommandChainProcessor<GetNameCommand>\\n{\\n    public GetNameCommandProcessor(ILogger<CommandChainProcessor<GetNameCommand>> logger,\\n                                   ICommandValidator<GetNameCommand> commandValidator,\\n                                   MetricsProcessor metricsProcessor,\\n                                   IValidator<Message> messageValidator) : base(logger,\\n                                                                                commandValidator,\\n                                                                                metricsProcessor,\\n                                                                                messageValidator)\\n    {\\n    }\\n\\n    protected override async Task InnerProcess(Message message, CancellationToken token)\\n    {\\n        var responseMessage = new Message\\n        {\\n            ChatIdInnerIdLinks = message.ChatIdInnerIdLinks,\\n            ChatIds = message.ChatIds,\\n            Subject = string.Empty,\\n            Body = \"Hello! What's your name?\"\\n        };\\n\\n        await SendMessage(responseMessage, token);\\n    }\\n}\\n"
+	},
+	{
+		"input": "Create a full C# file for a StartCommandProcessor<TReplyMarkup> implementing the provided logic (include using directives and namespace).",
+		"output": "using Botticelli.Framework.Commands.Processors;\\nusing Botticelli.Framework.Commands.Validators;\\nusing Botticelli.Shared.API.Client.Requests;\\nusing Botticelli.Shared.ValueObjects;\\nusing FluentValidation;\\nusing Microsoft.Extensions.Logging;\\nusing System.Threading;\\nusing System.Threading.Tasks;\\n\\nnamespace Broadcasting.Sample.Common.Commands.Processors\\n{\\n    public class StartCommandProcessor<TReplyMarkup> : CommandProcessor<StartCommand> where TReplyMarkup : class\\n    {\\n        public StartCommandProcessor(ILogger<StartCommandProcessor<TReplyMarkup>> logger,\\n                                     ICommandValidator<StartCommand> commandValidator,\\n                                     IValidator<Message> messageValidator)\\n                : base(logger,\\n                       commandValidator,\\n                       messageValidator)\\n        {\\n        }\\n\\n        protected override Task InnerProcessContact(Message message, CancellationToken token)\\n        {\\n            return Task.CompletedTask;\\n        }\\n\\n        protected override Task InnerProcessPoll(Message message, CancellationToken token)\\n        {\\n            return Task.CompletedTask;\\n        }\\n\\n        protected override Task InnerProcessLocation(Message message, CancellationToken token)\\n        {\\n            return Task.CompletedTask;\\n        }\\n\\n        protected override async Task InnerProcess(Message message, CancellationToken token)\\n        {\\n            var greetingMessageRequest = new SendMessageRequest\\n            {\\n                Message = new Message\\n                {\\n                    ChatIds = message.ChatIds,\\n                    Body = \\\"Bot started. Please, wait for broadcast messages from admin...\\\"\\n                }\\n            };\\n\\n            await SendMessage(greetingMessageRequest, token);\\n        }\\n    }\\n}"
+	},
+	{
+		"input": "Create a full C# file for a simple StopCommandProcessor that replies with a stop message.",
+		"output": "using Botticelli.Framework.Commands.Processors;\\nusing Botticelli.Framework.Commands.Validators;\\nusing Botticelli.Shared.API.Client.Requests;\\nusing Botticelli.Shared.ValueObjects;\\nusing FluentValidation;\\nusing Microsoft.Extensions.Logging;\\nusing System.Threading;\\nusing System.Threading.Tasks;\\n\\nnamespace Broadcasting.Sample.Common.Commands.Processors\\n{\\n    public class StopCommandProcessor : CommandProcessor<StopCommand>\\n    {\\n        public StopCommandProcessor(ILogger<StopCommandProcessor> logger, ICommandValidator<StopCommand> commandValidator, IValidator<Message> messageValidator)\\n            : base(logger, commandValidator, messageValidator) { }\\n\\n        protected override async Task InnerProcess(Message message, CancellationToken token)\\n        {\\n            var req = new SendMessageRequest { Message = new Message { ChatIds = message.ChatIds, Body = \\\"Bot stopped. Goodbye.\\\" } };\\n            await SendMessage(req, token);\\n        }\\n    }\\n}"
+	},
+	{
+		"input": "Create a full C# file for an InfoCommandProcessor that sends info text and a reply keyboard.",
+		"output": "using Botticelli.Framework.Commands.Processors;\\nusing Botticelli.Framework.Commands.Validators;\\nusing Botticelli.Shared.API.Client.Requests;\\nusing Botticelli.Shared.ValueObjects;\\nusing FluentValidation;\\nusing Microsoft.Extensions.Logging;\\nusing System.Threading;\\nusing System.Threading.Tasks;\\nusing Telegram.Bot.Types.ReplyMarkups;\\n\\nnamespace Broadcasting.Sample.Common.Commands.Processors\\n{\\n    public class InfoCommandProcessor : CommandProcessor<InfoCommand>\\n    {\\n        public InfoCommandProcessor(ILogger<InfoCommandProcessor> logger, ICommandValidator<InfoCommand> commandValidator, IValidator<Message> messageValidator) : base(logger, commandValidator, messageValidator) { }\\n\\n        protected override async Task InnerProcess(Message message, CancellationToken token)\\n        {\\n            var reply = new ReplyKeyboardMarkup(new[] { new[] { new KeyboardButton(\"Help\") } }) { ResizeKeyboard = true };\\n            var req = new SendMessageRequest { Message = new Message { ChatIds = message.ChatIds, Body = \\\"This is the bot info.\\\" }, Options = SendOptionsBuilder<ReplyKeyboardMarkup>.CreateBuilder(reply) };\\n            await SendMessage(req, token);\\n        }\\n    }\\n}"
+	},
+	{
+		"input": "Create a full C# file for GetNameCommandProcessor that asks user for their name (chain processor).",
+		"output": "using Botticelli.Client.Analytics;\\nusing Botticelli.Framework.Commands.Processors;\\nusing Botticelli.Framework.Commands.Validators;\\nusing Botticelli.Shared.ValueObjects;\\nusing FluentValidation;\\nusing Microsoft.Extensions.Logging;\\nusing System.Threading;\\nusing System.Threading.Tasks;\\n\\nnamespace TelegramCommandChainSample.Commands.CommandProcessors\\n{\\n    public class GetNameCommandProcessor : WaitForClientResponseCommandChainProcessor<GetNameCommand>\\n    {\\n        public GetNameCommandProcessor(ILogger<CommandChainProcessor<GetNameCommand>> logger, ICommandValidator<GetNameCommand> commandValidator, MetricsProcessor metricsProcessor, IValidator<Message> messageValidator) : base(logger, commandValidator, metricsProcessor, messageValidator) { }\\n\\n        protected override async Task InnerProcess(Message message, CancellationToken token)\\n        {\\n            var responseMessage = new Message { ChatIdInnerIdLinks = message.ChatIdInnerIdLinks, ChatIds = message.ChatIds, Subject = string.Empty, Body = \\\"Hello! What's your name?\\\" };\\n            await SendMessage(responseMessage, token);\\n        }\\n    }\\n}"
+	},
+	{
+		"input": "Create a full C# file for a ScheduledStartCommandProcessor that schedules a follow-up message via IJobManager.",
+		"output": "using Botticelli.Framework.Commands.Processors;\\nusing Botticelli.Framework.Commands.Validators;\\nusing Botticelli.Shared.API.Client.Requests;\\nusing Botticelli.Shared.ValueObjects;\\nusing Botticelli.Scheduler.Interfaces;\\nusing FluentValidation;\\nusing Microsoft.Extensions.Logging;\\nusing System;\\nusing System.Linq;\\nusing System.Threading;\\nusing System.Threading.Tasks;\\n\\nnamespace MessagingSample.Common.Commands.Processors\\n{\\n    public class ScheduledStartCommandProcessor : CommandProcessor<StartCommand>\\n    {\\n        private readonly IJobManager _jobManager;\\n        public ScheduledStartCommandProcessor(ILogger<ScheduledStartCommandProcessor> logger, ICommandValidator<StartCommand> commandValidator, IJobManager jobManager, IValidator<Message> messageValidator) : base(logger, commandValidator, messageValidator) => _jobManager = jobManager;\\n\\n        protected override async Task InnerProcess(Message message, CancellationToken token)\\n        {\\n            var req = new SendMessageRequest { Message = new Message { ChatIds = message.ChatIds, Body = \\\"Scheduled start acknowledged.\\\" } };\\n            await SendMessage(req, token);\\n\\n            var chatId = message.ChatIds.First();\\n            _jobManager.AddJob(null!, new Reliability { IsEnabled = true, Delay = TimeSpan.FromSeconds(10) }, new Message { ChatIds = new[] { chatId }, Body = \\\"Follow-up after delay.\\\" }, new Schedule { Cron = \"0/10 * * * * ?\" });\\n        }\\n    }\\n}"
+	},
+	{
+		"input": "Create a SendMessage Command",
+		"output": "public class SendMessageCommand : ICommand\n{\n    public Guid Id { get; }\n}"
+	},
+	{
+		"input": "Create a Start Command",
+		"output": "public class StartCommand : ICommand\n{\n    public Guid Id { get; }\n}"
+	},
+	{
+		"input": "Create a Stop Command",
+		"output": "public class StopCommand : ICommand\n{\n    public Guid Id { get; }\n}"
+	},
+	{
+		"input": "Create an Info Command",
+		"output": "public class InfoCommand : ICommand\n{\n    public Guid Id { get; }\n}"
+	},
+	{
+		"input": "Create a GetName Command",
+		"output": "public class GetNameCommand : ICommand\n{\n    public Guid Id { get; }\n}"
+	},
+	{
+		"input": "How can I create a standalone bot using Botticelli in ASP.NET Core?",
+		"output": "using Botticelli.Framework.Commands.Validators;\\nusing Botticelli.Framework.Extensions;\\nusing Botticelli.Framework.Telegram.Extensions;\\nusing Botticelli.Schedule.Quartz.Extensions;\\nusing MessagingSample.Common.Commands;\\nusing MessagingSample.Common.Commands.Processors;\\nusing NLog.Extensions.Logging;\\nusing Telegram.Bot.Types.ReplyMarkups;\\n\\nvar builder = WebApplication.CreateBuilder(args);\\n\\nbuilder.Services\\n       .AddStandaloneTelegramBot(builder.Configuration)\\n       .Prepare();\\n        \\nbuilder.Services\\n       .AddTelegramLayoutsSupport()\\n       .AddLogging(cfg => cfg.AddNLog())\\n       .AddQuartzScheduler(builder.Configuration);\\n\\nbuilder.Services.AddBotCommand<InfoCommand>()\\n       .AddProcessor<InfoCommandProcessor<ReplyKeyboardMarkup>>()\\n       .AddValidator<PassValidator<InfoCommand>>();\\n\\nbuilder.Services.AddBotCommand<StartCommand>()\\n       .AddProcessor<StartCommandProcessor<ReplyKeyboardMarkup>>()\\n       .AddValidator<PassValidator<StartCommand>>();\\n\\nbuilder.Services.AddBotCommand<StopCommand>()\\n       .AddProcessor<StopCommandProcessor<ReplyKeyboardMarkup>>()\\n       .AddValidator<PassValidator<StopCommand>>();\\n\\nawait builder.Build().RunAsync();"
+	},
+	{
+		"input": "Give step-by-step setup for a standalone Botticelli bot in Program.cs",
+		"output": "using Botticelli.Framework.Commands.Validators;\\nusing Botticelli.Framework.Extensions;\\nusing Botticelli.Framework.Telegram.Extensions;\\nusing Botticelli.Schedule.Quartz.Extensions;\\nusing MessagingSample.Common.Commands;\\nusing MessagingSample.Common.Commands.Processors;\\nusing NLog.Extensions.Logging;\\nusing Telegram.Bot.Types.ReplyMarkups;\\n\\nvar builder = WebApplication.CreateBuilder(args);\\n\\n// register standalone bot\\nbuilder.Services\\n       .AddStandaloneTelegramBot(builder.Configuration)\\n       .Prepare();\\n\\n// add layouts, logging and scheduler\\nbuilder.Services\\n       .AddTelegramLayoutsSupport()\\n       .AddLogging(cfg => cfg.AddNLog())\\n       .AddQuartzScheduler(builder.Configuration);\\n\\n// register commands\\nbuilder.Services.AddBotCommand<InfoCommand>()\\n       .AddProcessor<InfoCommandProcessor<ReplyKeyboardMarkup>>()\\n       .AddValidator<PassValidator<InfoCommand>>();\\n\\nbuilder.Services.AddBotCommand<StartCommand>()\\n       .AddProcessor<StartCommandProcessor<ReplyKeyboardMarkup>>()\\n       .AddValidator<PassValidator<StartCommand>>();\\n\\nbuilder.Services.AddBotCommand<StopCommand>()\\n       .AddProcessor<StopCommandProcessor<ReplyKeyboardMarkup>>()\\n       .AddValidator<PassValidator<StopCommand>>();\\n\\nawait builder.Build().RunAsync();"
+	},
+	{
+		"input": "Minimal Program.cs that uses AddStandaloneTelegramBot and registers Start/Stop/Info commands",
+		"output": "using Botticelli.Framework.Commands.Validators;\\nusing Botticelli.Framework.Extensions;\\nusing Botticelli.Framework.Telegram.Extensions;\\nusing Botticelli.Schedule.Quartz.Extensions;\\nusing MessagingSample.Common.Commands;\\nusing MessagingSample.Common.Commands.Processors;\\nusing NLog.Extensions.Logging;\\nusing Telegram.Bot.Types.ReplyMarkups;\\n\\nvar builder = WebApplication.CreateBuilder(args);\\n\\nbuilder.Services.AddStandaloneTelegramBot(builder.Configuration).Prepare();\\nbuilder.Services.AddTelegramLayoutsSupport().AddLogging(cfg => cfg.AddNLog()).AddQuartzScheduler(builder.Configuration);\\nbuilder.Services.AddBotCommand<StartCommand>().AddProcessor<StartCommandProcessor<ReplyKeyboardMarkup>>().AddValidator<PassValidator<StartCommand>>();\\nbuilder.Services.AddBotCommand<StopCommand>().AddProcessor<StopCommandProcessor<ReplyKeyboardMarkup>>().AddValidator<PassValidator<StopCommand>>();\\nbuilder.Services.AddBotCommand<InfoCommand>().AddProcessor<InfoCommandProcessor<ReplyKeyboardMarkup>>().AddValidator<PassValidator<InfoCommand>>();\\nawait builder.Build().RunAsync();"
+	},
+	{
+		"input": "How to enable NLog, layouts and Quartz with standalone Botticelli bot",
+		"output": "using Botticelli.Framework.Commands.Validators;\\nusing Botticelli.Framework.Extensions;\\nusing Botticelli.Framework.Telegram.Extensions;\\nusing Botticelli.Schedule.Quartz.Extensions;\\nusing MessagingSample.Common.Commands;\\nusing MessagingSample.Common.Commands.Processors;\\nusing NLog.Extensions.Logging;\\nusing Telegram.Bot.Types.ReplyMarkups;\\n\\nvar builder = WebApplication.CreateBuilder(args);\\n\\nbuilder.Services.AddStandaloneTelegramBot(builder.Configuration).Prepare();\\nbuilder.Services.AddTelegramLayoutsSupport();\\nbuilder.Services.AddLogging(cfg => cfg.AddNLog());\\nbuilder.Services.AddQuartzScheduler(builder.Configuration);\\n// register commands as needed\\nawait builder.Build().RunAsync();"
+	},
+	{
+		"input": "Example of registering InfoCommand with ReplyKeyboardMarkup for a standalone bot",
+		"output": "using Botticelli.Framework.Commands.Validators;\\nusing Botticelli.Framework.Extensions;\\nusing Botticelli.Framework.Telegram.Extensions;\\nusing MessagingSample.Common.Commands;\\nusing MessagingSample.Common.Commands.Processors;\\nusing NLog.Extensions.Logging;\\nusing Telegram.Bot.Types.ReplyMarkups;\\n\\nvar builder = WebApplication.CreateBuilder(args);\\n\\nbuilder.Services.AddStandaloneTelegramBot(builder.Configuration).Prepare();\\nbuilder.Services.AddLogging(cfg => cfg.AddNLog());\\nbuilder.Services.AddBotCommand<InfoCommand>().AddProcessor<InfoCommandProcessor<ReplyKeyboardMarkup>>().AddValidator<PassValidator<InfoCommand>>();\\nawait builder.Build().RunAsync();"
+	},
+	{
+		"input": "How do I create a Telegram bot that supports payments using the provided Program.cs and PaySettings?",
+		"output": "Use the provided Program.cs: Configure<PaySettings> with appsettings.json, call AddTelegramPayBot<PayPreCheckoutHandler, DummyPayProcessor<PayPreCheckoutHandler, PreCheckoutQuery>>(Configuration), implement IPreCheckoutHandler (PayPreCheckoutHandler) to handle pre-checkout events, replace DummyPayProcessor with a real IPayProcessor iplementation to validate and finalize payments, add invoice commands like SendInvoiceCommand and their processors, set the payment provider token in PaySettings:ProviderToken, then run the web app."
+	},
+	{
+		"input": "Where do I put the payment provider token?",
+		"output": "Place the provider token in appsettings.json under the PaySettings section, e.g. {\"PaySettings\": {\"ProviderToken\": \"<Payments provider token>\"}}, and ensure Program.cs binds it with builder.Services.Configure<PaySettings>(builder.Configuration.GetSection(\"PaySettings\"))."
+	},
+	{
+		"input": "How do I validate and process a pre-checkout query?",
+		"output": "Implement IPreCheckoutHandler (PayPreCheckoutHandler) to receive PreCheckoutQuery instances, and implement IPayProcessor<THandler,PreCheckoutQuery> to perform verification (check InvoicePayload, verify amount and currency, validate order info), record or reserve the order, and return (true, \"\") on success or (false, \"error message\") on failure so the bot confirms or rejects the pre-checkout."
+	},
+	{
+		"input": "Which model types represent the pre-checkout data?",
+		"output": "Use the PreCheckoutQuery class provided: Id (string), From (User), Currency (Currency), TotalAmount (decimal formatted like 11.50), InvoicePayload (string), optional ShippingOptionId (string?), and optional OrderInfo. Map Telegram pre-checkout fields into this model for processing."
+	},
+	{
+		"input": "How can I send an invoice from a bot using this project structure?",
+		"output": "Register SendInvoiceCommand and SendInvoiceCommandProcessor; in the processor build a Telegram invoice payload and call Botticelli’s send-invoice API using the ProviderToken from PaySettings; include a unique InvoicePayload value so the PreCheckoutQuery references it; use ReplyKeyboardMarkup or inline keyboard as required."
+	},
+	{
+		"input": "What changes are needed to use a real payment processor instead of DummyPayProcessor?",
+		"output": "Create a class implementing IPayProcessor<PayPreCheckoutHandler,PreCheckoutQuery> with real payment handling: validate provider signatures, verify amounts/currency, update order/payment status in DB, and handle refunds or retries. Replace DummyPayProcessor in Program.cs with your implementation in the AddTelegramPayBot call and ensure dependency injection registration and configuration are correct."
+	},
+	{
+		"input": "How do I test payments in a non-production environment?",
+		"output": "Use sandbox/test credentials from your payments provider and set those as PaySettings:ProviderToken in appsettings.json. If supported, set TelegramBot:useTestEnvironment = true. Implement your IPayProcessor to accept simulated transactions or mock the provider API so you can exercise success and failure flows without real charges."
+	},
+	{
+		"input": "How to wire command validators for payment-related commands?",
+		"output": "Register validators using AddValidator when adding bot commands, e.g. builder.Services.AddBotCommand<SendInvoiceCommand>().AddProcessor<SendInvoiceCommandProcessor<ReplyKeyboardMarkup>>().AddValidator<PassValidator<SendInvoiceCommand>>(); implement or reuse validators (like PassValidator) to check required fields (amount, currency, payload) before sending invoices."
+	},
+	{
+		"input": "What should I include in InvoicePayload and how to use it?",
+		"output": "Include a unique identifier for the order (e.g., orderId:userId:timestamp) in InvoicePayload so you can correlate the PreCheckoutQuery back to your order. Store the mapping server-side so when PreCheckoutQuery arrives you can look up the order, verify totals and currency, and proceed with payment handling in your IPayProcessor."
+	},
+	{
+		"input": "How do I record successful payments and update order status?",
+		"output": "In your IPayProcessor.Process implementation, after validating the PreCheckoutQuery, update your database record for the order referenced by InvoicePayload to mark it paid (store transaction id, amount, currency, payer info), emit any business events or notifications, and return success. Ensure idempotency so repeated pre-checkout events do not double-process the same order."
+	},
+	{
+		"input": "What is Botticelli?",
+		"output": "Botticelli is an open-source .NET framework for building universal bots with integrations to databases, queue brokers, speech engines, and AI models (e.g., GPT-j, ChatGPT)."
+	},
+	{
+		"input": "Where can I find Botticelli's source code?",
+		"output": "The Botticelli project is available on GitHub (search for the devgopher/botticelli repository)."
+	},
+	{
+		"input": "Why choose Botticelli for bot development?",
+		"output": "Botticelli is cross-platform, reliable, easy to use and deploy (Docker-ready), and provides integrations for databases, AI (Botticelli.AI), speech (Botticelli.Talks), message brokers (Botticelli.Bus) and scheduling (Botticelli.Scheduler)."
+	},
+	{
+		"input": "How is Botticelli architected?",
+		"output": "Botticelli is split into two main parts: the Server (management and orchestration) and Bots (individual bot implementations with business logic)."
+	},
+	{
+		"input": "What can administrators do on Botticelli Server?",
+		"output": "On the server you can add bots, change bot configuration, activate/deactivate bots and monitor their status (alive/dead)."
+	},
+	{
+		"input": "What responsibilities does a bot implementation have in Botticelli?",
+		"output": "Bot-side code implements business logic: command processors, message handlers, integrations with external APIs and data storage. "
+	},
+	{
+		"input": "What are Botticelli's system requirements?",
+		"output": ".NET 6+ (or .NET Core 6) and an IDE like Visual Studio 2022+ or JetBrains Rider."
+	},
+	{
+		"input": "How to clone the Botticelli repo?",
+		"output": "Run: git clone https://github.com/devgopher/botticelli.git"
+	},
+	{
+		"input": "Where are usage examples for Botticelli located?",
+		"output": "See the Samples directory in the repository — it contains example bot projects and usage scenarios."
+	},
+	{
+		"input": "How do I register a Telegram bot to use with Botticelli?",
+		"output": "Register a bot via BotFather (https://core.telegram.org/bots/tutorial#introduction) and save the Bot Token for configuration."
+	},
+	{
+		"input": "How to start a sample Botticelli project after cloning?",
+		"output": "Edit appsettings.json for your environment, go to Samples\\TelegramMessagingSample and run the provided run_standalone.sh or start the project via your IDE."
+	},
+	{
+		"input": "What happens after the first run of a sample bot?",
+		"output": "A Data\\botId file is created with the generated botId; copy that botId to use when adding the bot to the admin panel."
+	},
+	{
+		"input": "How to access the Botticelli admin panel locally?",
+		"output": "Open https://localhost:7247 and sign in with credentials (example: admin1@botticellibots.com / 12345678) as provided in samples. "
+	},
+	{
+		"input": "How to add a bot through the admin UI?",
+		"output": "In 'Your bots' click 'Add Bot', paste the generated botId and save — the server will register the bot for management."
+	},
+	{
+		"input": "How do I activate or deactivate a bot?",
+		"output": "Use the start/stop toggle on the 'Your bots' page to activate the bot and monitor its alive/dead status."
+	},
+	{
+		"input": "How to create a minimal Telegram bot with BotticelliBots?",
+		"output": "1) Ensure .NET 8+ and an IDE. 2) Add BotticelliBots to your project. 3) Register bot with BotFather and get token. 4) Create a Web API project and register services in Program.cs (AddTelegramBot, AddHostedService, AddBotCommand). 5) Implement command processors and run the app."
+	},
+	{
+		"input": "How to implement a command processor in Botticelli?",
+		"output": "Create a class inheriting from CommandProcessor<TCommand> and override InnerProcess to build and send SendMessageRequest via _bot. Example sends current UTC time message."
+	},
+	{
+		"input": "Can you show a sample GetUtc command processor?",
+		"output": "public class GetUtcCommandProcessor<TReplyMarkupBase> : CommandProcessor<GetUtcCommand> { protected override async Task InnerProcess(Message message, string args, CancellationToken token) { var req = new SendMessageRequest(Guid.NewGuid().ToString()) { Message = new Message { Body = $\"Current UTC Time is: {DateTime.UtcNow.ToString(CultureInfo.InvariantCulture)}\" } }; await _bot.SendMessageAsync(req, null, token); } }"
+	},
+	{
+		"input": "How to configure a Web API project for Botticelli?",
+		"output": "In Visual Studio create a new .NET Web API project and add Botticelli services and configuration in Program.cs and appsettings.json."
+	},
+	{
+		"input": "What does InnerProcess method typically do?",
+		"output": "InnerProcess composes a SendMessageRequest (with unique id and Message body) and sends it through the bot client to the user."
+	},
+	{
+		"input": "Where to find example bots built with Botticelli?",
+		"output": "Look at the repository’s Samples and specific example projects such as Telegram AI Sample on GitHub."
+	},
+	{
+		"input": "Where to get documentation or help about BotticelliBots?",
+		"output": "Visit the BotticelliBots website and community channels (GitHub issues, Telegram group) for docs and support."
+	},
+	{
+		"input": "What is BotticelliBundle?",
+		"output": "BotticelliBundle is a Docker image/template to simplify deployment of a Botticelli-based bot, packaging build and runtime steps for easy deployment."
+	},
+	{
+		"input": "What features does BotticelliBundle provide?",
+		"output": "It offers Docker integration, sample configuration files and a streamlined testing/deployment workflow for Botticelli bots."
+	},
+	{
+		"input": "How to deploy a bot using BotticelliBundle?",
+		"output": "Clone the bundle, adapt Dockerfile and appsettings.json, build the Docker image (dotnet build in build stage), and run the runtime image with your bot DLL and configuration."
+	},
+	{
+		"input": "Which parts of the Dockerfile need customization?",
+		"output": "Replace cloned repo paths, set your repository clone URL, adjust project directory and set the correct <YourBot>.dll for ENTRYPOINT; update appsettings.json copy step."
+	},
+	{
+		"input": "Why use Docker for bot deployment?",
+		"output": "Docker ensures consistent runtime environment, isolates dependencies, simplifies testing and speeds up deployment across environments."
+	},
+	{
+		"input": "What are Docker benefits for Botticelli bots?",
+		"output": "Faster deployment, environment consistency, isolation, easier scaling and reproducible builds."
+	},
+	{
+		"input": "On which OS can Docker run?",
+		"output": "Docker runs on Linux, macOS and Windows — choose the platform supported by your infrastructure for container orchestration."
+	},
+	{
+		"input": "Where is the BotticelliBots GitHub org?",
+		"output": "Botticelli and related projects are hosted under the devgopher organization on GitHub (https://github.com/devgopher)."
+	},
+	{
+		"input": "Where to get more BotticelliBots info online?",
+		"output": "Check http://botticellibots.com/ and GitHub repos for docs, samples and community links."
+	},
+	{
+		"input": "What key files are in the Botticelli repo?",
+		"output": "Typical contents: src/ (framework), Samples/, Docker/ scripts, appsettings.json example, and README.md with usage instructions."
+	},
+	{
+		"input": "What is stored in src/?",
+		"output": "The src/ folder contains core framework source code, base classes and libraries used by Bots and Server components."
+	},
+	{
+		"input": "What is included in Samples/?",
+		"output": "Sample bot implementations demonstrating common patterns and how to configure and run bots with Botticelli."
+	},
+	{
+		"input": "What is the Docker/ directory for?",
+		"output": "It contains Dockerfiles, build scripts and container-related artifacts to package and run Botticelli applications."
+	},
+	{
+		"input": "What is appsettings.json used for?",
+		"output": "appsettings.json stores configuration like connection strings, server URIs, PaySettings, TelegramBot settings and other environment-specific values."
+	},
+	{
+		"input": "What is README.md for?",
+		"output": "README.md provides an overview of the project, setup instructions, examples and links to further documentation."
+	},
+	{
+		"input": "What is the Air Quality Bot example?",
+		"output": "An example Telegram bot demonstrating usage of Botticelli to fetch and present local air quality data to users (source: devgopher/air_quality_bot)."
+	},
+	{
+		"input": "What functionality does the Air Quality Bot provide?",
+		"output": "It retrieves air quality metrics for a location and displays readable summaries to users via Telegram messages."
+	},
+	{
+		"input": "What is the Recipes Finder Bot?",
+		"output": "A sample bot that helps users find recipes by ingredient or preference, implemented using Botticelli patterns (repo: devgopher/cookbook_bot)."
+	},
+	{
+		"input": "What does Recipes Finder Bot allow users to do?",
+		"output": "Search for recipes, receive cooking suggestions and step-by-step directions based on user input."
+	},
+	{
+		"input": "What is the WikiBooks Finder Bot?",
+		"output": "A sample which locates educational resources on WikiBooks and returns links or summaries to users (repo: devgopher/wikibooks_bot)."
+	},
+	{
+		"input": "How does the WikiBooks Finder Bot help users?",
+		"output": "It automates searches across WikiBooks and provides quick access to relevant chapters or books."
+	},
+	{
+		"input": "Are there multiple working Botticelli examples?",
+		"output": "Yes — Air Quality Bot, Recipes Finder Bot, WikiBooks Finder Bot and others demonstrate different capabilities of the framework."
+	},
+	{
+		"input": "How would you describe the Botticelli framework concisely?",
+		"output": "Botticelli is an open-source .NET framework for building chatbots with rich integrations to AI, speech, databases and brokers."
+	},
+	{
+		"input": "What use cases suit Botticelli-built chatbots?",
+		"output": "Customer support automation, information bots, commerce bots (invoicing/payments), educational assistants and integrations with enterprise systems."
+	},
+	{
+		"input": "What advantages do developers get from Botticelli?",
+		"output": "Cross-platform development, modular architecture, prebuilt integrations, ease of deployment and support for AI/speech extensions."
+	},
+	{
+		"input": "Which messaging platforms can Botticelli target?",
+		"output": "Botticelli is designed to target multiple messengers including Telegram, WhatsApp, Facebook Messenger and region-specific platforms like WeChat."
+	},
+	{
+		"input": "Why is customizable bot code important in Botticelli?",
+		"output": "It enables developers to implement specific business logic and tailor the bot’s behavior to unique workflows or domain needs."
+	},
+	{
+		"input": "What makes BotticelliBots easy to use?",
+		"output": "A unified management UI, modular commands/processors, and sample projects lower the barrier to building and maintaining bots."
+	},
+	{
+		"input": "Which AI tech integrates well with Botticelli?",
+		"output": "Botticelli supports integration with AI models such as GPT-j and OpenAI-based models (ChatGPT) for natural language capabilities."
+	},
+	{
+		"input": "How does Botticelli improve user interaction via audio?",
+		"output": "By integrating speech synthesizers (Botticelli.Talks), Botticelli can generate audio responses for a more natural user experience."
+	},
+	{
+		"input": "What role does Botticelli.Bus play?",
+		"output": "Botticelli.Bus provides connectors for message brokers and external APIs (e.g., RabbitMQ), enabling scalable, decoupled workflows."
+	},
+	{
+		"input": "What future enhancements are planned for Botticelli?",
+		"output": "Planned improvements include more messaging platform connectors (Facebook, WeChat), expanded AI integrations and improved tooling for deployment."
+	},
+	{
+		"input": "How to follow Botticelli updates?",
+		"output": "Follow the project on GitHub, join the Telegram community and check the Botticelli website for announcements."
+	},
+	{
+		"input": "How do I create an AiCommandProcessor to send user messages to an AI backend?",
+		"output": "Create a class inheriting CommandProcessor<AiCommand>, inject IEventBusClient and layout supplier, subscribe to _bus.OnReceived to forward AI responses with SendMessage (using SendOptionsBuilder and AiLayout), and in InnerProcess send a SendMessageRequest with an AiMessage containing Uid, ChatIds, Body (message.GetArguments()), From and ForwardedFrom."
+	},
+	{
+		"input": "What does AiCommandProcessor.InnerProcessLocation do and why?",
+		"output": "It formats the message.Location into a dot-decimal coordinate string (latitude,longitude) and assigns it to message.Body, then calls InnerProcess so location messages are routed to the AI the same way as text messages."
+	},
+	{
+		"input": "How do I wire AiCommandProcessor in Program.cs?",
+		"output": "Register services: AddTelegramBot(...).Prepare(); AddDeepSeekProvider(configuration); AddAiValidation(); AddScoped<ICommandValidator<AiCommand>, PassValidator<AiCommand>>(); AddSingleton<AiHandler>(); UsePassBusAgent<IBot<TelegramBot>,AiHandler>(); UsePassBusClient<IBot<TelegramBot>>(); UsePassEventBusClient<IBot<TelegramBot>>(); AddBotCommand<AiCommand, AiCommandProcessor<ReplyKeyboardMarkup>, PassValidator<AiCommand>>(); AddTelegramLayoutsSupport(); then build and run the app."
+	},
+	{
+		"input": "How does AiCommandProcessor send messages to the event bus?",
+		"output": "It calls _bus.Send(new SendMessageRequest(message.Uid) { Message = new AiMessage(message.Uid) { ChatIds = message.ChatIds, Body = message.Body?.GetArguments(), From = message.From, ForwardedFrom = message.ForwardedFrom } }, token) to forward the message to the AI handler via the event bus."
+	},
+	{
+		"input": "What is AiHandler's responsibility?",
+		"output": "AiHandler implements IHandler<SendMessageRequest, SendMessageResponse>; it receives SendMessageRequest and calls IAiProvider.SendAsync with an AiMessage built from the request (mapping ChatIds, Body, Subject, and ReplyToMessageUid), handling exceptions with logging."
+	},
+	{
+		"input": "How to integrate DeepSeek/ChatGPT provider into this pipeline?",
+		"output": "Add the provider extension (e.g., AddDeepSeekProvider(configuration) or AddAiProvider for ChatGPT), implement IAiProvider to call the provider API, register it in DI, and ensure AiHandler receives that IAiProvider so provider.SendAsync forwards messages to DeepSeek/ChatGPT."
+	},
+	{
+		"input": "How do AI responses get back to users from the provider?",
+		"output": "The IAiProvider implementation should send incremental or final responses to the event bus (or call the IEventBusClient.OnReceived callback). AiCommandProcessor subscribes to _bus.OnReceived and forwards those responses to the user via SendMessageRequest with ExpectPartialResponse, SequenceNumber and IsFinal."
+	},
+	{
+		"input": "What is AiLayout used for in AiCommandProcessor?",
+		"output": "AiLayout defines quick-reply buttons (e.g., /ai Hello!, /ai Tell me smth!) that the layout supplier converts into a reply markup; SendOptionsBuilder uses that markup so AI-related replies include the proper keyboard."
+	},
+	{
+		"input": "How to format the Invoice-like message UID and ensure idempotency?",
+		"output": "Use message.Uid (GUID-like unique id) for SendMessageRequest and AiMessage.ReplyToMessageUid so both requests and responses are correlated; provider and bus implementations must deduplicate based on Uid to avoid double-processing."
+	},
+	{
+		"input": "How to validate messages before sending to AI?",
+		"output": "Register IValidator<Message> in DI (FluentValidation) and pass it to the base CommandProcessor; AddAiValidation() extension registers necessary validators; CommandProcessor will run validation before InnerProcess is executed."
+	},
+	{
+		"input": "How to implement IAiProvider for DeepSeek or ChatGPT?",
+		"output": "Implement IAiProvider.SendAsync(AiMessage, CancellationToken) to call the provider’s API (DeepSeek/ChatGPT): map AiMessage.Body and ChatIds to the API request, stream incremental tokens if supported, and push responses back by invoking the event bus or calling a callback tied to the message.Uid."
+	},
+	{
+		"input": "How to handle partial/streamed AI responses in this architecture?",
+		"output": "IAiProvider should emit partial responses with sequence numbers and IsPartial=true; AiCommandProcessor’s _bus.OnReceived handler will receive those, and SendMessage with ExpectPartialResponse and SequenceNumber will stream them to the user, finishing with IsFinal=true for the last chunk."
+	},
+	{
+		"input": "How to test the AI pipeline locally without a real provider?",
+		"output": "Register a mock IAiProvider that returns deterministic partial and final SendMessageResponse objects or invokes the event bus OnReceived with test messages; this lets AiCommandProcessor and AiHandler be exercised end-to-end."
+	},
+	{
+		"input": "What dependencies must be registered for AiCommandProcessor to work?",
+		"output": "Register IEventBusClient, ILayoutSupplier<TReplyMarkup>, IValidator<Message>, ICommandValidator<AiCommand>, MetricsProcessor, AiHandler, and IAiProvider (DeepSeek/ChatGPT) along with AddTelegramBot and layout support extensions in Program.cs."
+	},
+	{
+		"input": "How to add command and layout support for Telegram reply markup?",
+		"output": "Use AddBotCommand<AiCommand, AiCommandProcessor<ReplyKeyboardMarkup>, PassValidator<AiCommand>>() and AddTelegramLayoutsSupport(); provide a layout supplier implementation that converts AiLayout into ReplyKeyboardMarkup for Telegram."
 	}
 ]
