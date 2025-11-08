@@ -1,0 +1,17 @@
+model:
+  base: "Alexis-Az/Qwen-2.5-Coder-7B-4bit-CSharp-Alpaca-Code-ORPO-LoRA"            # base model to fine-tune
+  tokenizer: "gpt-2"
+
+train:
+  output_dir: "./unsloth-out"
+  epochs: 3
+  batch_size: 8
+  lr: 5e-5
+  max_length: 256
+  val_split: 0.05
+  seed: 42
+
+data:
+  train_path: "./trainingSet.json"
+  text_field: "input"
+  completion_field: "output"
