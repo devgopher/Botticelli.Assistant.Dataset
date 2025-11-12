@@ -1,2 +1,2 @@
-# Botticell.Assistant.Dataset
+# Botticelli.Assistant.Dataset
 Assistant dataset for LLAMA training
